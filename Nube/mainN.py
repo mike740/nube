@@ -17,6 +17,8 @@ import EnergyPriceN
 
 # Inputs
 
+print('hola ya esta en la nube 2 veces')
+
 # Ratio of KWp by area [KWP/m2], value obtained from the manufacturer technical sheet
 wp=0.145 # ratio in [kwp/m2]
 
