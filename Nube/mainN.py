@@ -10,14 +10,12 @@ Created on Jun 27, 2018
 import matplotlib.pyplot as plt         
 import numpy as np
 import SolarProductionN
-import csv 
+import csv  
 import EnergyPriceN
 
 #import Loan
 
 # Inputs
-
-print('hola ya esta en la nube 2 veces')
 
 # Ratio of KWp by area [KWP/m2], value obtained from the manufacturer technical sheet
 wp=0.145 # ratio in [kwp/m2]
@@ -27,6 +25,10 @@ area=100 #m2
 #solar production year estimate_bandwidth    kw*h/yr
 solarP=SolarProductionN.myfunc(wp)*area*wp
 print('Anual solar output:  '+str(solarP)+' kw*h/yr') 
+# Tax reduction
+
+
+
 #Total cost of install  $
 #iInv=15265
 #print(area*wp)
@@ -57,6 +59,8 @@ months=12*25
 #Discount rate
 dRate=0.05
 dRateM=(1+dRate)**(1/12)-1
+#Minimum fees $/month
+minimumFee=0
 
 
 
@@ -70,6 +74,8 @@ vDegradation=[]
 vDegradation.append(0)
 eGeneration=[]
 eGeneration.append(0)
+MinFees=[]
+MinFees.append(9)
 cashFlow=[]
 cashFlowY=[]
 netCashFlow=[]
@@ -83,7 +89,7 @@ for i in range(months+1):
     vTime.append(i)
     
     
-#Columns: Monthly energy production[kw*h],Degradation[%],Energy generation by month[kw*h]
+#Columns: Monthly energy production[kw*h],Degradation[%],Energy generation by month[kw*h], minimum fee [usd/month], Cash flow [usd/month], netcashflow [usd/month]
 for i in range(1,months+1):
     
     mProduction=round(solarP/12,7) # delete round
@@ -95,8 +101,10 @@ for i in range(1,months+1):
     generation=round(mProduction*(1-degradation),7)# 
     eGeneration.append(generation)
     
+    MinFees.append(minimumFee)
+    
     #cash=round(generation*energyP*(1+i*electricityI/(100*12)),3) # aqui esta el peine
-    cash=round(generation*energyP*(1+i*electricityI/(12)),7) # aqui esta el peine
+    cash=round(generation*energyP*(1+i*electricityI/(12)),7)-minimumFee # aqui esta el peine
     cashFlow.append(cash)
     
     net=round(sum(cashFlow),3)
@@ -143,10 +151,9 @@ print('IRR Year: %s '%irrY)
 presentValue=np.npv(dRateM,netCashFlow)
 print('Net Present value: '+str(presentValue))
 
-#print(vDegradation)    
-print('')
-print(netCashFlow)
-print(netCashFlowY)
+
+#print(netCashFlow)
+#print(netCashFlowY)
 
 
 
@@ -158,12 +165,12 @@ for i in range(0,30):
     #present=np.npv(x,netCashFlowY)
     present=np.npv(x,cashFlowY)
     presentM.append(present)
-print(presentM)
+#print(presentM)
     
 
 #----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV
 with open('mycsv.csv','w',newline='') as f:
-    fieldnames=['Period','Monthly energy production','Panel degradation','Energy generation','Cashflow','Net cashflow']
+    fieldnames=['Period','Monthly energy production','Panel degradation','Energy generation','Minimum Fees','Cashflow','Net cashflow']
     thewriter=csv.DictWriter(f ,fieldnames=fieldnames)
     
     thewriter.writeheader()
@@ -175,7 +182,8 @@ with open('mycsv.csv','w',newline='') as f:
         gen= eGeneration[i]
         cas= cashFlow[i]
         net= netCashFlow[i]
-        thewriter.writerow({'Period':period, 'Monthly energy production':pro,'Panel degradation': deg,'Energy generation': gen,'Cashflow':cas,'Net cashflow':net})
+        fee=MinFees[i]
+        thewriter.writerow({'Period':period, 'Monthly energy production':pro,'Panel degradation': deg,'Energy generation': gen,'Minimum Fees':fee,'Cashflow':cas,'Net cashflow':net})
         
 
 #----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots
