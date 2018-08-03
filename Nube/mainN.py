@@ -1,5 +1,6 @@
 #Calculate ROI
 #Indicate the number of solar panels and inverters
+from click._compat import raw_input
 
 
 '''
@@ -12,8 +13,7 @@ import numpy as np
 import SolarProductionN
 import csv  
 import EnergyPriceN
-
-#import Loan
+import Loan
 
 # Inputs
 
@@ -43,6 +43,16 @@ else:
     print('mayor a 10')
 print('inivital investment:  '+str(iInv)+' $ USD')
 
+#Discount rate
+dRate=0.05
+dRateM=(1+dRate)**(1/12)-1
+print (dRateM)
+#number of months
+months=12*25
+#Loan
+percentageLoan= int(raw_input('Percentage of borrowed from the initial investment'))/100
+loan= Loan.loan(dRateM,months,percentageLoan*iInv)   
+
 
 #Energy price per $/KW*h  Type of user
 #type=raw_input('Enter type of user:residential,industrial or business')
@@ -54,11 +64,8 @@ electricityI=0.02
 
 #solar panel yearly degradation 1/yr
 panelD=0.005
-#number of months
-months=12*25
-#Discount rate
-dRate=0.05
-dRateM=(1+dRate)**(1/12)-1
+
+
 #Minimum fees $/month
 minimumFee=0
 
