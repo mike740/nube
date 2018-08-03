@@ -44,7 +44,7 @@ else:
 print('inivital investment:  '+str(iInv)+' $ USD')
 
 #Discount rate
-dRate=0.05
+dRate=0.0772
 dRateM=(1+dRate)**(1/12)-1
 print (dRateM)
 #number of months
