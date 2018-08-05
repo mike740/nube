@@ -1,6 +1,7 @@
 #Calculate ROI
 #Indicate the number of solar panels and inverters
 from click._compat import raw_input
+from Loan import principalM, monthlyInstallmentM
 
 
 '''
@@ -49,9 +50,14 @@ dRateM=(1+dRate)**(1/12)-1
 print (dRateM)
 #number of months
 months=12*25
+'''
+#Tax benefits
+taxBenefit=int(raw_input('Type the percentage of tax benefit'))/100
+iInv=(1-taxBenefit)*iInv
+'''
 #Loan
 percentageLoan= int(raw_input('Percentage of borrowed from the initial investment'))/100
-loan= Loan.loan(dRateM,months,percentageLoan*iInv)   
+installment= Loan.loan(dRateM,months,percentageLoan*iInv)   
 
 
 #Energy price per $/KW*h  Type of user
@@ -177,7 +183,8 @@ for i in range(0,30):
 
 #----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV
 with open('mycsv.csv','w',newline='') as f:
-    fieldnames=['Period','Monthly energy production','Panel degradation','Energy generation','Minimum Fees','Cashflow','Net cashflow']
+    #fieldnames=['Period','Monthly energy production','Panel degradation','Energy generation','Minimum Fees','Cashflow','Net cashflow']
+    fieldnames=['Period','Monthly energy production','Panel degradation','Energy generation','Minimum Fees','Monthly installment','Cashflow','Net cashflow']
     thewriter=csv.DictWriter(f ,fieldnames=fieldnames)
     
     thewriter.writeheader()
@@ -187,10 +194,12 @@ with open('mycsv.csv','w',newline='') as f:
         pro= mEProduction[i]
         deg= vDegradation[i]
         gen= eGeneration[i]
+        fee=MinFees[i]
+        mon=monthlyInstallmentM[i]
         cas= cashFlow[i]
         net= netCashFlow[i]
-        fee=MinFees[i]
-        thewriter.writerow({'Period':period, 'Monthly energy production':pro,'Panel degradation': deg,'Energy generation': gen,'Minimum Fees':fee,'Cashflow':cas,'Net cashflow':net})
+        
+        thewriter.writerow({'Period':period, 'Monthly energy production':pro,'Panel degradation': deg,'Energy generation': gen,'Minimum Fees':fee,'Monthly installment':mon,'Cashflow':cas,'Net cashflow':net})
         
 
 #----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots
@@ -202,7 +211,7 @@ case2=[i *k for i in netCashFlowY]
 
 
 
-grafica=plt.figure(1)
+grafica=plt.figure(2)
 ax=grafica.add_subplot(421)
 ax.bar(vTimeY,netCashFlowY,color=(1.0,0.5,0.62))
 ax.set_ylabel('Cash flow')
@@ -246,6 +255,7 @@ ax.set_title('IRR project '+p1)
 ax.grid(color='b', linestyle='-', linewidth=0.1)
 plt.axhline(linewidth=1, color='r')
 plt.show()
+
 
 '''
 plt.figure(1)
