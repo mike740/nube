@@ -1,14 +1,14 @@
-#Calculate ROI
-#Indicate the number of solar panels and inverters
-from click._compat import raw_input
-from Loan import principalM, monthlyInstallmentM
-
-
 '''
 Created on Jun 27, 2018
 
 @author: Miguel RT
 '''
+
+#Calculate ROI
+#Indicate the number of solar panels and inverters
+from click._compat import raw_input
+from Loan import principalM, monthlyInstallmentM
+
 import matplotlib.pyplot as plt         
 import numpy as np
 import SolarProductionN
@@ -274,7 +274,6 @@ plt.plot(vTime[1:12],eGeneration[1:12])
 plt.ylabel('Energy Kw*h')
 plt.xlabel('months')
 plt.title('First year of energy generation')
-
 
 
 plt.show()
