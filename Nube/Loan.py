@@ -17,7 +17,7 @@ balanceM=[] #balance per month [$USD]
 def PlotLoan(numberOfPaymentsM,aInterestM,aPrincipalM,balanceM):
     plt.figure(1)
     plt.plot(numberOfPaymentsM,balanceM,'r',numberOfPaymentsM,aInterestM,'b',numberOfPaymentsM,aPrincipalM,'g')
-    plt.show()
+   # plt.show()
     
 
 def Mycsv2(periods):

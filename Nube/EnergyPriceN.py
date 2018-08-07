@@ -6,12 +6,12 @@ Source of information:"https://app.cfe.mx/Aplicaciones/CCFE/Tarifas/TarifasCRECa
 
 '''
 import pandas as pd
-solarPl =26941.0 #kw*h/yr
+solarPl =2797 #kw*h/yr
 
-def allocation(type,solarP):
+def allocation(type,solarP,cp):
 
     df=pd.read_excel('DB.xlsx')
-    cp=44670
+    #cp=54670
     cp2=int(cp/1000)    
     row=(df[df.PC==cp2])
     typeR=row.iat[0,3]
@@ -21,28 +21,49 @@ def allocation(type,solarP):
     print('Monthly consumption:  '+str(consumption)+' kw*h/monthly')
     
     if type=='residential':
-        residential(typeR,consumption)
+        energyP=residential(typeR,consumption)
+        return(energyP)
     elif type=='industrial':
-        industrial(consumption)
+        energyP=industrial(consumption)
+        return(energyP)
     elif    type=='business':
-        business(consumption)
+        energyP=business(consumption)
+        return(energyP)
+    
+        
     
 
 def residential(typeR,consumption):    
-    print ('Residential price')
+    df=pd.read_excel('DB.xlsx','ResidentialPrices')    
+    row=(df[df.Type==typeR])
+    basicConsumption=row.iat[0,1] #[$/kwh]
+    intermediateConsumption=row.iat[0,2] #[$/kwh]
+    extraConsumption=row.iat[0,3] #[$/kwh]
+    firstLimit=row.iat[0,4] #[kwh]
+    secondLimit=row.iat[0,5] #[kwh]        
     
+    
+    if 0 <= consumption < (firstLimit):
+        print('first interval')
+        totalPrice=consumption*basicConsumption #$
+        
+        
+    elif firstLimit <= consumption < (firstLimit+secondLimit):
+        print ('second interval')
+        totalPrice=firstLimit*basicConsumption + (consumption-(firstLimit))*intermediateConsumption
+    else:
+        print ('third interval')
+        totalPrice=firstLimit*basicConsumption+secondLimit*intermediateConsumption+ ((consumption-(firstLimit+secondLimit))*extraConsumption)
+    unitPrice=totalPrice/consumption  #$/kwh
+   
+    return(unitPrice)
+    #print ('Unit price: '+str(unitPrice)+'$/kwh')
+    
+    
+    
+    '''
     if typeR=='AA':
         print('AA')
-        df=pd.read_excel('DB.xlsx','ResidentialPrices')    
-        row=(df[df.Type==typeR])
-        basicConsumption=row.iat[0,1] #[$/kwh]
-        intermediateConsumption=row.iat[0,2] #[$/kwh]
-        extraConsumption=row.iat[0,3] #[$/kwh]
-        firstLimit=row.iat[0,4] #[kwh]
-        secondLimit=row.iat[0,5] #[kwh]
-        
-        print (secondLimit)
-    
     elif typeR =='A':
         print('A')    
     elif typeR =='B':
@@ -56,7 +77,6 @@ def residential(typeR,consumption):
     elif typeR=='F':
         print('F')   
     
-    '''
     one=int(250) #limit in kwh
     a=int(300) #limit in kwh
     b=int(400) #limit in kwh
@@ -93,4 +113,4 @@ def business(consumption):
     energyP=0.147
     return(energyP)
 
-allocation('residential',solarPl)
+#allocation('residential',solarPl)

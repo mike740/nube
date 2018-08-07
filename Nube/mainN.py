@@ -3,7 +3,6 @@ Created on Jun 27, 2018
 
 @author: Miguel RT
 '''
-
 #Calculate ROI
 #Indicate the number of solar panels and inverters
 from click._compat import raw_input
@@ -15,6 +14,7 @@ import SolarProductionN
 import csv  
 import EnergyPriceN
 import Loan
+import ExchangeRate
 
 # Inputs
 
@@ -23,12 +23,16 @@ wp=0.145 # ratio in [kwp/m2]
 
 #Area of the solar panels in [m2]
 area=100 #m2
+#postal code
+#cp=int(raw_input("What is your postal code??"))
+cp=44670
+#Exchange rate
+
+exchangeRate=ExchangeRate.exchange() #[mxn/usd]
+print (' Exhange rate: ', str(exchangeRate)+' mxn/usd')
 #solar production year estimate_bandwidth    kw*h/yr
-solarP=SolarProductionN.myfunc(wp)*area*wp
+solarP=SolarProductionN.myfunc(wp,cp)*area*wp
 print('Anual solar output:  '+str(solarP)+' kw*h/yr') 
-# Tax reduction
-
-
 
 #Total cost of install  $
 #iInv=15265
@@ -50,6 +54,7 @@ dRateM=(1+dRate)**(1/12)-1
 print (dRateM)
 #number of months
 months=12*25
+
 '''
 #Tax benefits
 taxBenefit=int(raw_input('Type the percentage of tax benefit'))/100
@@ -60,10 +65,13 @@ percentageLoan= int(raw_input('Percentage of borrowed from the initial investmen
 installment= Loan.loan(dRateM,months,percentageLoan*iInv)   
 
 
-#Energy price per $/KW*h  Type of user
+#Energy price per [$/KW*h]  Type of user
 #type=raw_input('Enter type of user:residential,industrial or business')
-#energyP=EnergyPrice.allocation(type,solarP)
-energyP=0.147
+
+energyP=EnergyPriceN.allocation('residential', solarP, cp)/exchangeRate
+print ('Unit price: '+str(energyP)+'$/kwh')
+#energyP=0.147
+#energyP=2.6811
 
 #electricity price increase per year    1/yr
 electricityI=0.02
@@ -88,7 +96,7 @@ vDegradation.append(0)
 eGeneration=[]
 eGeneration.append(0)
 MinFees=[]
-MinFees.append(9)
+MinFees.append(0)
 cashFlow=[]
 cashFlowY=[]
 netCashFlow=[]
@@ -117,7 +125,7 @@ for i in range(1,months+1):
     MinFees.append(minimumFee)
     
     #cash=round(generation*energyP*(1+i*electricityI/(100*12)),3) # aqui esta el peine
-    cash=round(generation*energyP*(1+i*electricityI/(12)),7)-minimumFee # aqui esta el peine
+    cash=round(generation*energyP*(1+i*electricityI/(12)),7)-minimumFee-Loan.monthlyInstallmentM[i]# aqui esta el peine
     cashFlow.append(cash)
     
     net=round(sum(cashFlow),3)
@@ -169,7 +177,6 @@ print('Net Present value: '+str(presentValue))
 #print(netCashFlowY)
 
 
-
 presentM=[]
 timeP=[]
 for i in range(0,30):
@@ -194,12 +201,12 @@ with open('mycsv.csv','w',newline='') as f:
         pro= mEProduction[i]
         deg= vDegradation[i]
         gen= eGeneration[i]
-        fee=MinFees[i]
+        #fee=MinFees[i]
         mon=monthlyInstallmentM[i]
         cas= cashFlow[i]
         net= netCashFlow[i]
         
-        thewriter.writerow({'Period':period, 'Monthly energy production':pro,'Panel degradation': deg,'Energy generation': gen,'Minimum Fees':fee,'Monthly installment':mon,'Cashflow':cas,'Net cashflow':net})
+        thewriter.writerow({'Period':period, 'Monthly energy production':pro,'Panel degradation': deg,'Energy generation': gen,'Minimum Fees':gen,'Monthly installment':mon,'Cashflow':cas,'Net cashflow':net})
         
 
 #----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots

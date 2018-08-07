@@ -1,12 +1,12 @@
 import pandas as pd
 from click._compat import raw_input
 
-def myfunc(wp):
+def myfunc(wp,cp):
     
     df=pd.read_excel('DB.xlsx')
     #wp=0.145 # ratio in [kwp/m2]
     #cp=int(raw_input("What is your postal code??"))
-    cp=44670
+    #cp=44670
     cp2=int(cp/1000)
 
     
