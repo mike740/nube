@@ -5,23 +5,58 @@ Created on Jul 31, 2018
 Source of information:"https://app.cfe.mx/Aplicaciones/CCFE/Tarifas/TarifasCRECasa/Tarifas/TarifaDAC.aspx"
 
 '''
+import pandas as pd
+solarPl =26941.0 #kw*h/yr
 
 def allocation(type,solarP):
+
+    df=pd.read_excel('DB.xlsx')
+    cp=44670
+    cp2=int(cp/1000)    
+    row=(df[df.PC==cp2])
+    typeR=row.iat[0,3]
+    print ('Residential type: '+str(typeR))
     
-    print (solarP)
     consumption=int(solarP)/12
+    print('Monthly consumption:  '+str(consumption)+' kw*h/monthly')
     
-    print('alloc')
     if type=='residential':
-        residential(type,consumption)
+        residential(typeR,consumption)
     elif type=='industrial':
-        industrial(type,consumption)
+        industrial(consumption)
     elif    type=='business':
-        business(type,consumption)
+        business(consumption)
     
 
-def residential(type,consumption):    
+def residential(typeR,consumption):    
     print ('Residential price')
+    
+    if typeR=='AA':
+        print('AA')
+        df=pd.read_excel('DB.xlsx','ResidentialPrices')    
+        row=(df[df.Type==typeR])
+        basicConsumption=row.iat[0,1] #[$/kwh]
+        intermediateConsumption=row.iat[0,2] #[$/kwh]
+        extraConsumption=row.iat[0,3] #[$/kwh]
+        firstLimit=row.iat[0,4] #[kwh]
+        secondLimit=row.iat[0,5] #[kwh]
+        
+        print (secondLimit)
+    
+    elif typeR =='A':
+        print('A')    
+    elif typeR =='B':
+        print('B')
+    elif typeR=='C':
+        print('C')
+    elif typeR=='D':
+        print('D')
+    elif typeR=='E':
+        print('E')
+    elif typeR=='F':
+        print('F')   
+    
+    '''
     one=int(250) #limit in kwh
     a=int(300) #limit in kwh
     b=int(400) #limit in kwh
@@ -31,10 +66,9 @@ def residential(type,consumption):
     f=2500 #limit in kwh
     energyP=0.147 # USD/kwh
     return(energyP)
-    '''
+    
     if 0 <= consumption <= one:
-        print('tarifa one')
-        
+        print('tarifa one')  
     elif one < consumption <=a:
         print('tarifa a')
     elif a < consumption <=b:
@@ -49,12 +83,14 @@ def residential(type,consumption):
         print('tarifa f')
     '''
 
-def industrial(type,consumption):
+def industrial(consumption):
     print('industrial price')
     energyP=0.037895
     return(energyP)
     
-def business(type,consumption):
+def business(consumption):
     print ('Business price')
     energyP=0.147
     return(energyP)
+
+allocation('residential',solarPl)
