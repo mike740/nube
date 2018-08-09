@@ -12,9 +12,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import SolarProductionN
 import csv  
+import datetime
 import EnergyPriceN
 import Loan
 import ExchangeRate
+
 
 # Inputs
 
@@ -29,6 +31,9 @@ cp=44670
 #Exchange rate
 
 exchangeRate=ExchangeRate.exchange() #[mxn/usd]
+now=datetime.datetime.now()
+day=now.strftime
+#print (now.strftime("%Y-%m-%d %H:%M"))
 print (' Exhange rate: ', str(exchangeRate)+' mxn/usd')
 #solar production year estimate_bandwidth    kw*h/yr
 solarP=SolarProductionN.myfunc(wp,cp)*area*wp
@@ -124,7 +129,7 @@ for i in range(1,months+1):
     
     MinFees.append(minimumFee)
     
-    #cash=round(generation*energyP*(1+i*electricityI/(100*12)),3) # aqui esta el peine
+    
     cash=round(generation*energyP*(1+i*electricityI/(12)),7)-minimumFee-Loan.monthlyInstallmentM[i]# aqui esta el peine
     cashFlow.append(cash)
     
