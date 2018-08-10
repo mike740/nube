@@ -2,9 +2,12 @@
 Created on Jun 27, 2018
 
 @author: Miguel RT
+implement irradiation distribution to generation
+
 '''
 #Calculate ROI
-#Indicate the number of solar panels and inverters
+#Add minimum fees
+
 from click._compat import raw_input
 from Loan import principalM, monthlyInstallmentM
 
@@ -16,7 +19,7 @@ import datetime
 import EnergyPriceN
 import Loan
 import ExchangeRate
-
+import Distribution
 
 # Inputs
 
@@ -36,7 +39,11 @@ day=now.strftime
 #print (now.strftime("%Y-%m-%d %H:%M"))
 print (' Exhange rate: ', str(exchangeRate)+' mxn/usd')
 #solar production year estimate_bandwidth    kw*h/yr
-solarP=SolarProductionN.myfunc(wp,cp)*area*wp
+irradiationMean=SolarProductionN.myfunc(wp,cp)
+#solarP=SolarProductionN.myfunc(wp,cp)*area*wp
+solarP=irradiationMean*area*wp
+irradiationDistribution=Distribution.distribution(irradiationMean) #irradiation distribution by month [kwh/hwp/year]
+print('irradiation distribution: '+str(irradiationDistribution)+'kwh/kwp')
 print('Anual solar output:  '+str(solarP)+' kw*h/yr') 
 
 #Total cost of install  $
@@ -73,8 +80,8 @@ installment= Loan.loan(dRateM,months,percentageLoan*iInv)
 #Energy price per [$/KW*h]  Type of user
 #type=raw_input('Enter type of user:residential,industrial or business')
 
-energyP=EnergyPriceN.allocation('residential', solarP, cp)/exchangeRate
-print ('Unit price: '+str(energyP)+'$/kwh')
+energyP=EnergyPriceN.allocation('residential', solarP, cp)*float(exchangeRate)
+print ('Unit price:'+str(energyP)+' $/kwh')
 #energyP=0.147
 #energyP=2.6811
 
@@ -89,13 +96,13 @@ panelD=0.005
 minimumFee=0
 
 
-
 #Cash flow model
 vTime=[] 
 vTimeY=[]
-
 mEProduction=[]
 mEProduction.append(0)
+mdistribution=[]
+mdistribution.append(0)
 vDegradation=[]
 vDegradation.append(0)
 eGeneration=[]
@@ -109,22 +116,27 @@ netCashFlowY=[]
 cashFlow.append(-iInv)
 netCashFlow.append(-iInv)
 
-
 #Columns:Time interval[month]
 for i in range(months+1):
     vTime.append(i)
     
-    
 #Columns: Monthly energy production[kw*h],Degradation[%],Energy generation by month[kw*h], minimum fee [usd/month], Cash flow [usd/month], netcashflow [usd/month]
 for i in range(1,months+1):
-    
+    j=i%12
+    if j==0:
+        j=12
+    #print ('j es igual    '+str(j))
     mProduction=round(solarP/12,7) # delete round
     mEProduction.append(mProduction)
+    mProductionD=float(irradiationDistribution[j-1])*area*wp 
+    mdistribution.append(mProductionD)
     
-    degradation=round(i*panelD/12,7) # delete round ???
+    
+    
+    degradation=round(i*panelD/12,7) 
     vDegradation.append(degradation)
     
-    generation=round(mProduction*(1-degradation),7)# 
+    generation=round(mProductionD*(1-degradation),7) # takes into account the distributed energy
     eGeneration.append(generation)
     
     MinFees.append(minimumFee)
@@ -137,13 +149,12 @@ for i in range(1,months+1):
     netCashFlow.append(net)
     
    
-    
-    
+
 # Output Parameters
 
 #print(cashFlow)
 
-# from months to years
+# from months to years #optimize algorithm
 years=int(months/12)
 for i in range(years):
     vTimeY.append(i+1)
@@ -196,7 +207,7 @@ for i in range(0,30):
 #----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV----CSV
 with open('mycsv.csv','w',newline='') as f:
     #fieldnames=['Period','Monthly energy production','Panel degradation','Energy generation','Minimum Fees','Cashflow','Net cashflow']
-    fieldnames=['Period','Monthly energy production','Panel degradation','Energy generation','Minimum Fees','Monthly installment','Cashflow','Net cashflow']
+    fieldnames=['Period','Monthly energy production','Distributed Monthly energy production','Panel degradation','Energy generation','Minimum Fees','Monthly installment','Cashflow','Net cashflow']
     thewriter=csv.DictWriter(f ,fieldnames=fieldnames)
     
     thewriter.writeheader()
@@ -204,6 +215,7 @@ with open('mycsv.csv','w',newline='') as f:
     for i in range(len(vTime)):
         period= vTime[i]
         pro= mEProduction[i]
+        dis=mdistribution[i]
         deg= vDegradation[i]
         gen= eGeneration[i]
         #fee=MinFees[i]
@@ -211,11 +223,10 @@ with open('mycsv.csv','w',newline='') as f:
         cas= cashFlow[i]
         net= netCashFlow[i]
         
-        thewriter.writerow({'Period':period, 'Monthly energy production':pro,'Panel degradation': deg,'Energy generation': gen,'Minimum Fees':gen,'Monthly installment':mon,'Cashflow':cas,'Net cashflow':net})
+        thewriter.writerow({'Period':period, 'Monthly energy production':pro,'Distributed Monthly energy production':dis,'Panel degradation': deg,'Energy generation': gen,'Monthly installment':mon,'Cashflow':cas,'Net cashflow':net})
         
 
 #----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots
-
 
 area2=200
 k=area/area2
