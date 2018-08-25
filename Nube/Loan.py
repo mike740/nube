@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 
 
 
+
+
 numberOfPaymentsM=[] #number of the months
 monthlyInstallmentM=[] # money to pay per month [$usd]
 interestM=[] # interest to pay per month [$usd]
@@ -11,12 +13,31 @@ aInterestM=[] #Cumulative interest to pay per month [$usd]
 principalM=[] # Principal matrix [$usd]
 aPrincipalM=[] # Cumulative Principal matrix [$usd]
 balanceM=[] #balance per month [$USD]
+quantityM=[]
 
 
 
-def PlotLoan(numberOfPaymentsM,aInterestM,aPrincipalM,balanceM):
+def PlotLoan(numberOfPaymentsM,aInterestM,aPrincipalM,balanceM,quantity):
     plt.figure(1)
-    plt.plot(numberOfPaymentsM,balanceM,'r',numberOfPaymentsM,aInterestM,'b',numberOfPaymentsM,aPrincipalM,'g')
+    for i in (numberOfPaymentsM):
+        quantityM.append(quantity)
+    plt.title("Interest vs Balance in a PV project", fontsize=20)
+    plt.plot(numberOfPaymentsM[1:],aInterestM[1:],label="Cumulative interest")
+    plt.plot(numberOfPaymentsM,balanceM,label="Balance")
+    plt.xlabel('Time [months]',fontsize=18)
+    plt.ylabel('Cumulative Interest [USD]',fontsize=18)
+    plt.yticks([0,2000,4000,6000,8000,10000,12000],['0','2,000$','4,000$','6,000$','8,000$','10,000$','12,000$'],fontsize=18)
+    plt.rc('xtick',labelsize=15)
+    plt.rc('ytick',labelsize=15)
+
+
+
+    plt.grid()
+    plt.legend(['Interest','Balance'],loc=9,shadow=True)
+
+    
+    #plt.hlines(y=10000, xmin=0, xmax=300, linewidth=2, color='r')
+
    # plt.show()
     
 
@@ -60,7 +81,7 @@ def loan(rate,periods,quantity):
         aprin=sum(principalM)
         aPrincipalM.append(aprin)
 
-    PlotLoan(numberOfPaymentsM,aInterestM,aPrincipalM,balanceM)         
+    PlotLoan(numberOfPaymentsM,aInterestM,aPrincipalM,balanceM,quantity)         
     Mycsv2(periods)
     
     return (monthlyInstallmentM)

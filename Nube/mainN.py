@@ -6,10 +6,13 @@ implement irradiation distribution to generation
 
 '''
 #Calculate ROI
+#check tax benefits
 #Add minimum fees
 
 from click._compat import raw_input
 from Loan import principalM, monthlyInstallmentM
+import matplotlib.ticker as mtick
+
 
 import matplotlib.pyplot as plt         
 import numpy as np
@@ -43,7 +46,7 @@ irradiationMean=SolarProductionN.myfunc(wp,cp)
 #solarP=SolarProductionN.myfunc(wp,cp)*area*wp
 solarP=irradiationMean*area*wp
 irradiationDistribution=Distribution.distribution(irradiationMean) #irradiation distribution by month [kwh/hwp/year]
-print('irradiation distribution: '+str(irradiationDistribution)+'kwh/kwp')
+print('irradiation distribution: '+str(irradiationDistribution)+'kwh/kwp/yr.')
 print('Anual solar output:  '+str(solarP)+' kw*h/yr') 
 
 #Total cost of install  $
@@ -63,6 +66,8 @@ print('inivital investment:  '+str(iInv)+' $ USD')
 #Discount rate
 dRate=0.0772
 dRateM=(1+dRate)**(1/12)-1
+dRate2=0.115
+dRateM2=(1+dRate2)**(1/12)-1
 print (dRateM)
 #number of months
 months=12*25
@@ -73,8 +78,9 @@ taxBenefit=int(raw_input('Type the percentage of tax benefit'))/100
 iInv=(1-taxBenefit)*iInv
 '''
 #Loan
-percentageLoan= int(raw_input('Percentage of borrowed from the initial investment'))/100
-installment= Loan.loan(dRateM,months,percentageLoan*iInv)   
+#percentageLoan= int(raw_input('Percentage of borrowed from the initial investment'))/100
+percentageLoan=0.5
+installment= Loan.loan(dRateM2,months,percentageLoan*iInv)   
 
 
 #Energy price per [$/KW*h]  Type of user
@@ -93,7 +99,7 @@ panelD=0.005
 
 
 #Minimum fees $/month
-minimumFee=0
+minimumFee=5
 
 
 #Cash flow model
@@ -185,7 +191,8 @@ irrY=np.irr(cashFlowY)
 print('IRR Year: %s '%irrY)
 
 
-presentValue=np.npv(dRateM,netCashFlow)
+#presentValue=np.npv(dRateM,netCashFlow) # is it net cash flow???
+presentValue=np.npv(dRateM,cashFlow)
 print('Net Present value: '+str(presentValue))
 
 
@@ -218,12 +225,12 @@ with open('mycsv.csv','w',newline='') as f:
         dis=mdistribution[i]
         deg= vDegradation[i]
         gen= eGeneration[i]
-        #fee=MinFees[i]
+        fee=MinFees[i]
         mon=monthlyInstallmentM[i]
         cas= cashFlow[i]
         net= netCashFlow[i]
         
-        thewriter.writerow({'Period':period, 'Monthly energy production':pro,'Distributed Monthly energy production':dis,'Panel degradation': deg,'Energy generation': gen,'Monthly installment':mon,'Cashflow':cas,'Net cashflow':net})
+        thewriter.writerow({'Period':period, 'Monthly energy production':pro,'Distributed Monthly energy production':dis,'Panel degradation': deg,'Energy generation': gen,'Minimum Fees':fee,'Monthly installment':mon,'Cashflow':cas,'Net cashflow':net})
         
 
 #----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots----Plots
@@ -237,19 +244,28 @@ case2=[i *k for i in netCashFlowY]
 grafica=plt.figure(2)
 ax=grafica.add_subplot(421)
 ax.bar(vTimeY,netCashFlowY,color=(1.0,0.5,0.62))
-ax.set_ylabel('Cash flow')
-ax.set_xlabel('Years')
-ax.set_title('Cash flow solar panels 25 years')
+ax.set_ylabel('Revenues [USD]')
+ax.set_xlabel('Years',fontsize=14)
+ax.set_title('Cash flow solar panels 25 years',fontsize=18)
 ax.grid(color='b', linestyle='-', linewidth=0.1)
+fmt = '${x:,.0f}'
+tick = mtick.StrMethodFormatter(fmt)
+ax.yaxis.set_major_formatter(tick) 
+plt.rc('xtick',labelsize=10)
+plt.rc('ytick',labelsize=10)
 
 
 ax=grafica.add_subplot(422)
 ax.plot(vTime,netCashFlow)
 ax.get_yaxis().set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x))))
-ax.set_ylabel('Cash flow')
+ax.set_ylabel('Revenues [USD]')
 ax.set_xlabel('Months')
-ax.set_title('Break even point project 1')
+ax.set_title('Break even point project 1',fontsize=18)
 ax.grid(color='b', linestyle='-', linewidth=0.1)
+fmt = '${x:,.0f}'
+tick = mtick.StrMethodFormatter(fmt)
+ax.yaxis.set_major_formatter(tick) 
+
 
 plt.axhline(linewidth=1, color='r')
 
@@ -259,50 +275,51 @@ ax=grafica.add_subplot(425)
 ax.plot(vTimeY,netCashFlowY,'g',vTimeY,case2,'r')
 ax.get_yaxis().set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x))))
 #ax.set_xticks(ax.get_xticks()[::1])# number of times the x axis is divided
-ax.set_ylabel('Cash flow')
+ax.set_ylabel('Cash flow [USD]')
 ax.set_xlabel('Years')
-ax.set_title('Revenue of two projects')
+ax.set_title('Revenue of two projects',fontsize=18)
 ax.grid(color='b', linestyle='-', linewidth=0.1)
 p1=str(area)+' m2 project '
 p2=str(area2)+' m2 project'
 ax.legend([p1,p2])
+fmt = '${x:,.0f}'
+tick = mtick.StrMethodFormatter(fmt)
+ax.yaxis.set_major_formatter(tick) 
+
+
 
 
 ax=grafica.add_subplot(426)
 ax.plot(timeP,presentM)
-ax.get_yaxis().set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x))))
-#ax.set_xticks(ax.get_xticks()[::1])# number of times the x axis is divided
-ax.set_ylabel('Cash flow')
+#ax.get_yaxis().set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x))))
+
+ax.set_ylabel('NPV [USD]')
 ax.set_xlabel('Discount rate')
-ax.set_title('IRR project '+p1)
+ax.set_title('IRR project '+p1,fontsize=18)
 ax.grid(color='b', linestyle='-', linewidth=0.1)
 plt.axhline(linewidth=1, color='r')
+plt.tight_layout()
+fmt = '${x:,.0f}'
+tick = mtick.StrMethodFormatter(fmt)
+ax.yaxis.set_major_formatter(tick) 
+
+
+
+
+plt.figure(3)
+plt.plot(vTime[1:13],cashFlow[1:13],'r-.')
+plt.bar(vTime[1:13],cashFlow[1:13])
+plt.ylim(0,max(vTime)*1.15)
+plt.grid()
+plt.xlabel('Time[months]',fontsize=20)
+plt.ylabel('Cash flow [USD]',fontsize=20)
+plt.yticks([0,50,100,150,200,250,300],[0,'50$','100$','150$','200$','250$','300$'])
+plt.xticks([1,2,3,4,5,6,7,8,9,10,11,12],['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],fontsize=15)
+plt.yticks(fontsize=15)
+plt.title("Cash flow of the first year", fontsize=20)
+
+
 plt.show()
 
-
-'''
-plt.figure(1)
-
-
-
-plt.subplot(3,1,1)
-plt.plot(vTime[1:300],eGeneration[1:300])
-plt.ylim((0, max(eGeneration)*1.1))
-plt.ylabel('Energy Kw*h')
-plt.xlabel('months')
-plt.title('Energy Generation')
-
-plt.subplot(3,1,3)
-plt.plot(vTime[1:12],eGeneration[1:12])
-plt.ylabel('Energy Kw*h')
-plt.xlabel('months')
-plt.title('First year of energy generation')
-
-
-plt.show()
-
-    '''
-    
-    
 
 

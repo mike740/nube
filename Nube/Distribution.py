@@ -14,7 +14,7 @@ def distribution(irradiation):
     # function we want to integrate
     def f(x):
         return exp(-((x-b)/c)**2)
-        #return exp(cos(-2 * x * pi)) + 3.2
+        
     
     # call quad to integrate f from -2 to 2
     res, err = quad(f, 1, 12)
@@ -45,8 +45,8 @@ def distribution(irradiation):
     y2prom=sum(y2)/len(y2)
     print('y2 promedio'+str(y2prom))# includes correction factor
     
-    plt.figure(3)
-    plt.plot(x,y2,x,averageMonth)
+    #plt.figure(3)
+    #plt.plot(x,y2,x,averageMonth)
     
     
     
